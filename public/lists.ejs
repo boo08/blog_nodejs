@@ -1,0 +1,29 @@
+<%- include('header'); -%>
+<div>
+  <div class="card">
+    <div class="card-body">     
+      <h1>Add Post 
+        <span class="pull-right">
+          <a href="/add">
+          <button type="button" class="btn btn-success float-right ">Add Post</button> 
+          </a>
+        </span>
+      </h1>
+    </div>
+  </div>
+
+  <% posts.forEach(function(post){ %>
+    
+
+    <div class="card ">
+      <div class="card-body">
+        <h5 class="card-title"><a href="<%=url %>/view/<%= post.id %>" ><%= post.title %></a></h5>
+        <p class="card-text"><%= post.content %></p>
+        <a href="<%=url %>/delete/<%= post.id %>" class="btn btn-danger">Delete</a>
+        <a href="<%=url %>/edit/<%= post.id %>" class="btn btn-primary">Edit</a>
+      </div>
+    </div>
+  <% }); %>
+</div>
+
+<%- include('footer'); -%>
