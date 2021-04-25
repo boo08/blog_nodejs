@@ -27,7 +27,11 @@ const limiter = rateLimit({
 });
 app.use(function(req, res, next) {
   res.locals.query = req.query;
-  res.locals.url   = "https://nodejsblog08.herokuapp.com";
+  if(PORT == 5000){
+    res.locals.url   = "http://localhost:5000";
+  }else{
+    res.locals.url   = "https://nodejsblog08.herokuapp.com";
+  }
   next();
 });
 app.use(bodyParser.urlencoded({extended: false}));
