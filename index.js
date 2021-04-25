@@ -7,6 +7,8 @@ var path = require("path");
 var bodyParser = require('body-parser');
 var helmet = require('helmet');
 var rateLimit = require("express-rate-limit");
+const PORT = process.env.PORT || 5000;
+
 var con = mysql.createConnection({
   host: "localhost",
   user: "root",
@@ -16,7 +18,7 @@ var con = mysql.createConnection({
 
 
 var app = express();
-var server = http.createServer(app);
+// var server = http.createServer(app);
 app.set('views','./public');
 app.set('view engine','ejs');
 const limiter = rateLimit({
@@ -25,7 +27,7 @@ const limiter = rateLimit({
 });
 app.use(function(req, res, next) {
   res.locals.query = req.query;
-  res.locals.url   = "http://localhost:3000";
+  res.locals.url   = "http://localhost:"+PORT;
   next();
 });
 app.use(bodyParser.urlencoded({extended: false}));
@@ -138,6 +140,7 @@ app.get('/close', function(req,res){
   });
 });
 
-server.listen(3000,function(){ 
-  console.log("Server listening on port: 3000");
-});
+// server.listen(3000,function(){ 
+//   console.log("Server listening on port: 3000");
+// });
+app.listen(PORT, () => console.log(`Listening on ${ PORT }`));
