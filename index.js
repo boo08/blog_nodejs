@@ -1,5 +1,6 @@
 
 var mysql = require('mysql');
+var sqlite3 = require('sqlite3').verbose();
 var express = require('express');
 var http = require('http');
 var path = require("path");
@@ -31,24 +32,27 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(express.static(path.join(__dirname,'./public')));
 app.use(helmet());
 app.use(limiter);
+var db = new sqlite3.Database(path.join(__dirname,'./database/blogs.db'));
 
 
-var DBQuery ='CREATE TABLE IF NOT EXISTS `blogs` ( `id` int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT, `title` varchar(220) NOT NULL, `content` text NOT NULL, `create` datetime NOT NULL DEFAULT current_timestamp(), `update` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp() )';
-con.query(DBQuery, function (err, result) {
-  if (err) throw err;
-});
+db.run('CREATE TABLE IF NOT EXISTS "blogs" (id integer primary key, title varchar(20), content text , created_at REAL, updated_at REAL) ');
+
 app.get('/', function(req,res){
   res.render("home", { myVar : "boopathi raja" });
 });
 
 app.get('/lists', function(req,res){
-  var BlogQuery='SELECT * from blogs';
-  con.query(BlogQuery, function (err, result) {
-    if (err) throw err;
-    
-   res.render("lists", { posts : result });   
-  });
+  
  
+  db.serialize(()=>{
+    db.all('SELECT * FROM blogs; ', function(err, rows) {
+      if (err) {
+        return console.log(err.message);
+      }
+      res.render("lists", { posts : rows });   
+
+    });
+});
 
 });
 app.get('/add', function(req,res){
@@ -56,50 +60,71 @@ app.get('/add', function(req,res){
 
 });
 app.get('/edit/:id', function(req,res){
-  con.query('SELECT * FROM blogs WHERE id =?', [req.params.id], function (err, result) {
-    if (err) throw err;
-    console.log(result);
-    res.render("edit", { blog :result});
-  });
+ 
+  db.serialize(()=>{
+    db.get('SELECT * FROM blogs WHERE id =?', [req.params.id], function(err, result) {
+      if (err) {
+        return console.log(err.message);
+      }
+
+      res.render("edit", { blog :result});
+
+    });
+});
 });
 
 app.post('/add', function(req,res){      
-      con.query('INSERT INTO blogs(title,content) VALUES(?,?)',[req.body.title,req.body.content], function (err, result) {
-        if (err) throw err;
-        console.log("New Post has been added");
+
+      db.serialize(()=>{
+        db.run('INSERT INTO blogs(title,content,created_at,updated_at) VALUES(?,?,datetime("now"),datetime("now"))',[req.body.title,req.body.content], function(err, result) {
+          if (err) {
+            return console.log(err.message);
+          }
+          console.log("New Post has been added");
         res.render("message", { message :" New Post has been added "});
       });
+});
 });
 
 app.get('/view/:id', function(req,res){
 
-  con.query('SELECT * FROM blogs WHERE id =?', [req.params.id], function (err, result) {
-    if (err) throw err;
-    console.log("Entry updated successfully");
-    res.render("view", { blog :result});
-  });
+  db.serialize(()=>{
+    db.get('SELECT * FROM blogs WHERE id =?', [req.params.id], function(err, result) {
+      if (err) {
+        return console.log(err.message);
+      }
+      console.log("Entry updated successfully");
+      res.render("view", { blog :result});
+    });
+});
 });
 
 app.post('/edit/:id', function(req,res){
-  console.log([req.params.title,req.params.content,req.params.id]);
-  con.query('UPDATE blogs SET title = ?,content = ? WHERE id = ?', [req.body.title,req.body.content,req.params.id], function (err, result) {
-    if (err) throw err;
-    console.log(result);
-    console.log("Entry updated successfully");
+ 
+  db.serialize(()=>{
+    db.run('UPDATE blogs SET title = ?,content = ?,updated_at=datetime("now") WHERE id = ?', [req.body.title,req.body.content,req.params.id], function(err, result) {
+      if (err) {
+        return console.log(err.message);
+      }
+      console.log("Entry updated successfully");
     res.render("message", { message :" Entry updated successfully "});
-  });
 
+    });
+});
 });
 
 app.get('/delete/:id', function(req,res){
- 
-  con.query('DELETE FROM blogs WHERE id = ?', req.params.id, function (err, result) {
-    if (err) throw err;
-    console.log("Blog Deleted successfully");
+
+  db.serialize(()=>{
+    db.run('DELETE FROM blogs WHERE id = ?', req.params.id, function(err, result) {
+      if (err) {
+        return console.log(err.message);
+      }
+      console.log("Blog Deleted successfully");
     res.render("message", { message :" Blog Deleted successfully "});
   });
 
-  
+});
 });
 
 app.get('/close', function(req,res){

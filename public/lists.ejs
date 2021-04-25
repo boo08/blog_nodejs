@@ -1,5 +1,10 @@
 <%- include('header'); -%>
 <div>
+  <%if (locals.message) { %>
+    <div class="alert alert-success" role="alert">
+      <h4 class="alert-heading"> <%= message %>   </h4>
+      </div>
+    <% } %>
   <div class="card">
     <div class="card-body">     
       <h1>Add Post 
@@ -11,19 +16,30 @@
       </h1>
     </div>
   </div>
-
-  <% posts.forEach(function(post){ %>
+  <% 
+  if (posts.length > 0) {
+  posts.forEach(function(post){ %>
     
 
     <div class="card ">
       <div class="card-body">
         <h5 class="card-title"><a href="<%=url %>/view/<%= post.id %>" ><%= post.title %></a></h5>
         <p class="card-text"><%= post.content %></p>
-        <a href="<%=url %>/delete/<%= post.id %>" class="btn btn-danger">Delete</a>
+        <a href="<%=url %>/delete/<%= post.id %>" onclick="return confirm('Are you sure you want to delete this post?');" class="btn btn-danger">Delete</a>
         <a href="<%=url %>/edit/<%= post.id %>" class="btn btn-primary">Edit</a>
       </div>
     </div>
-  <% }); %>
+  <% });
+  }else{
+  %>
+  <div class="card ">
+    <div class="card-body">
+      <h5 class="card-title">Posts Not Available</h5>
+   
+    </div>
+  </div>
+  <% } %>
+
 </div>
 
 <%- include('footer'); -%>
