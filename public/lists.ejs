@@ -1,6 +1,6 @@
 <%- include('header'); -%>
 <div>
-  <%if (locals.message) { %>
+  <%if ( typeof message != 'undefined' && message) { %>
     <div class="alert alert-success" role="alert">
       <h4 class="alert-heading"> <%= message %>   </h4>
       </div>
@@ -10,7 +10,7 @@
       <h1>All Post 
         <span class="pull-right">
           <a href="/add">
-          <button type="button" class="btn btn-success float-right ">Add Post</button> 
+          <button type="button" class="btn btn-success float-right ">+ New Post</button> 
           </a>
         </span>
       </h1>
@@ -24,6 +24,7 @@
     <div class="card ">
       <div class="card-body">
         <h5 class="card-title"><a href="<%=url %>/view/<%= post.id %>" ><%= post.title %></a></h5>
+        <h6 class="card-subtitle mb-2 text-muted">Written by <%= post.author %> On <%= post.created_at %></h6>
         <p class="card-text"><%= post.content %></p>
         <a href="<%=url %>/delete/<%= post.id %>" onclick="return confirm('Are you sure you want to delete this post?');" class="btn btn-danger">Delete</a>
         <a href="<%=url %>/edit/<%= post.id %>" class="btn btn-primary">Edit</a>

@@ -1,5 +1,4 @@
 
-var mysql = require('mysql');
 var sqlite3 = require('sqlite3').verbose();
 var express = require('express');
 var http = require('http');
@@ -7,20 +6,22 @@ var path = require("path");
 var bodyParser = require('body-parser');
 var helmet = require('helmet');
 var rateLimit = require("express-rate-limit");
+var session = require('express-session');
+var flash = require('req-flash');
 const PORT = process.env.PORT || 5000;
 
-var con = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "",
-  database: "test"
-});
+
 
 
 var app = express();
-// var server = http.createServer(app);
 app.set('views','./public');
 app.set('view engine','ejs');
+app.use(session({
+  secret: 'djhxcvxfgshajfgjhgsjhfgsakjeauytsdfy',
+  resave: false,
+  saveUninitialized: true
+  }));
+  app.use(flash());
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100 // limit each IP to 100 requests per windowMs
@@ -40,8 +41,8 @@ app.use(helmet());
 app.use(limiter);
 var db = new sqlite3.Database(path.join(__dirname,'./database/blogs.db'));
 
-
-db.run('CREATE TABLE IF NOT EXISTS "blogs" (id integer primary key, title varchar(20), content text , created_at REAL, updated_at REAL) ');
+// db.run('DROP TABLE blogs');
+db.run('CREATE TABLE IF NOT EXISTS "blogs" (id integer primary key, title varchar(20), content text , author text , created_at REAL, updated_at REAL) ');
 
 app.get('/', function(req,res){
   res.render("home", { myVar : "boopathi raja" });
@@ -55,7 +56,7 @@ app.get('/lists', function(req,res){
       if (err) {
         return console.log(err.message);
       }
-      res.render("lists", { posts : rows });   
+      res.render("lists", { posts : rows, message: req.flash('message') });   
 
     });
 });
@@ -82,12 +83,12 @@ app.get('/edit/:id', function(req,res){
 app.post('/add', function(req,res){      
 
       db.serialize(()=>{
-        db.run('INSERT INTO blogs(title,content,created_at,updated_at) VALUES(?,?,datetime("now"),datetime("now"))',[req.body.title,req.body.content], function(err, result) {
+        db.run('INSERT INTO blogs(title,content,author,created_at,updated_at) VALUES(?,?,?,datetime("now"),datetime("now"))',[req.body.title,req.body.content,req.body.author], function(err, result) {
           if (err) {
             return console.log(err.message);
           }
-          console.log("New Post has been added");
-        res.render("message", { message :" New Post has been added "});
+      req.flash('message', 'New Post has been added ');
+      res.redirect('/lists');
       });
 });
 });
@@ -99,7 +100,6 @@ app.get('/view/:id', function(req,res){
       if (err) {
         return console.log(err.message);
       }
-      console.log("Entry updated successfully");
       res.render("view", { blog :result});
     });
 });
@@ -108,12 +108,12 @@ app.get('/view/:id', function(req,res){
 app.post('/edit/:id', function(req,res){
  
   db.serialize(()=>{
-    db.run('UPDATE blogs SET title = ?,content = ?,updated_at=datetime("now") WHERE id = ?', [req.body.title,req.body.content,req.params.id], function(err, result) {
+    db.run('UPDATE blogs SET title = ?,content = ?,author= ?,updated_at=datetime("now") WHERE id = ?', [req.body.title,req.body.content,req.body.author,req.params.id], function(err, result) {
       if (err) {
         return console.log(err.message);
-      }
-      console.log("Entry updated successfully");
-    res.render("message", { message :" Entry updated successfully "});
+      }  
+    req.flash('message', 'Entry Updated Successfully');
+    res.redirect('/lists');
 
     });
 });
@@ -125,9 +125,9 @@ app.get('/delete/:id', function(req,res){
     db.run('DELETE FROM blogs WHERE id = ?', req.params.id, function(err, result) {
       if (err) {
         return console.log(err.message);
-      }
-      console.log("Blog Deleted successfully");
-    res.render("message", { message :" Blog Deleted successfully "});
+      }   
+      req.flash('message', 'Blog Deleted Successfully');
+      res.redirect('/lists');
   });
 
 });
