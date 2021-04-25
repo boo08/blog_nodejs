@@ -87,7 +87,7 @@ app.post('/add', function(req,res){
           if (err) {
             return console.log(err.message);
           }
-      req.flash('message', 'New Post has been added ');
+      req.flash('message', 'New Blog has been added ');
       res.redirect('/lists');
       });
 });
@@ -112,7 +112,7 @@ app.post('/edit/:id', function(req,res){
       if (err) {
         return console.log(err.message);
       }  
-    req.flash('message', 'Entry Updated Successfully');
+    req.flash('message', 'Blog Updated Successfully');
     res.redirect('/lists');
 
     });
