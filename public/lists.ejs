@@ -24,7 +24,7 @@
     <div class="card ">
       <div class="card-body">
         <h5 class="card-title"><a href="<%=url %>/view/<%= post.id %>" ><%= post.title %></a></h5>
-        <h6 class="card-subtitle mb-2 text-muted">Written by <%= post.author %> On <%= post.created_at %></h6>
+        <h6 class="card-subtitle mb-2 text-muted">Written by <%= post.author %> On <%= post.created_at %> Last Update <%= post.updated_at %></h6>
         <p class="card-text"><%= post.content %></p>
         <a href="<%=url %>/delete/<%= post.id %>" onclick="return confirm('Are you sure you want to delete this post?');" class="btn btn-danger">Delete</a>
         <a href="<%=url %>/edit/<%= post.id %>" class="btn btn-primary">Edit</a>

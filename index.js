@@ -41,7 +41,7 @@ app.use(helmet());
 app.use(limiter);
 var db = new sqlite3.Database(path.join(__dirname,'./database/blogs.db'));
 
-// db.run('DROP TABLE blogs');
+
 db.run('CREATE TABLE IF NOT EXISTS "blogs" (id integer primary key, title varchar(20), content text , author text , created_at REAL, updated_at REAL) ');
 
 app.get('/', function(req,res){
